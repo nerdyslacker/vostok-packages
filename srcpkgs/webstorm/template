@@ -1,0 +1,78 @@
+# Template file for 'webstorm'
+pkgname=webstorm
+version=2025.3.2
+revision=1
+archs="x86_64"
+wrksrc="WebStorm-${version}" # Имя папки внутри архива
+distfiles="https://download.jetbrains.com/webstorm/WebStorm-${version}.tar.gz"
+checksum= # <--- ВАЖНО: замените на актуальный SHA256
+homepage="https://www.jetbrains.com/webstorm/"
+license="custom:jetbrains"
+short_desc="JavaScript IDE and HTML editor by JetBrains (binary repack)"
+maintainer="Vostok Linux <vostoklinux.org>"
+nostrip=yes
+
+
+# Зависимости: 
+# - glib2, libX11, libXtst и т.д. — типичны для Electron и Java-приложений.
+# - java-runtime — опционально, но рекомендуется для использования системной Java.
+# - webstorm-jre — если решите собирать отдельно, но для начала достаточно системной.
+depends="glib2 libX11 libXext libXrender libXtst libXi"
+# Если вы хотите, чтобы пакет явно требовал Java (системную), раскомментируйте:
+# depends+=" java-runtime"
+
+do_install() {
+	# Устанавливаем основные файлы в /opt/webstorm
+	vmkdir opt/webstorm
+	vcopy "${wrksrc}/*" opt/webstorm
+
+	# Создаём симлинк для основного скрипта запуска
+	vmkdir usr/bin
+	ln -sf /opt/webstorm/bin/webstorm.sh ${DESTDIR}/usr/bin/webstorm
+
+	# Создаём .desktop файл на основе шаблона из AUR
+	vmkdir usr/share/applications
+	cat > ${DESTDIR}/usr/share/applications/webstorm.desktop <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WebStorm
+Icon=webstorm
+Exec="/usr/bin/webstorm" %f
+Comment=The smartest JavaScript IDE
+Categories=Development;IDE;
+Terminal=false
+StartupWMClass=jetbrains-webstorm
+StartupNotify=true
+EOF
+
+	# Установка иконки (ищем в типичных местах)
+	vmkdir usr/share/pixmaps
+	vmkdir usr/share/icons/hicolor/128x128/apps
+	local icon_src=""
+	for path in "${wrksrc}/bin/webstorm.png" "${wrksrc}/bin/webstorm.svg"; do
+		if [ -f "$path" ]; then
+			icon_src="$path"
+			break
+		fi
+	done
+
+	if [ -n "$icon_src" ]; then
+		# Копируем основную иконку
+		cp "$icon_src" ${DESTDIR}/usr/share/pixmaps/webstorm.png
+		# Копируем в стандартный каталог hicolor
+		cp "$icon_src" ${DESTDIR}/usr/share/icons/hicolor/128x128/apps/webstorm.png
+	else
+		echo "Warning: WebStorm icon not found." >&2
+	fi
+
+	# Установка лицензионного соглашения
+	vmkdir usr/share/licenses/${pkgname}
+	if [ -f "${wrksrc}/LICENSE.txt" ]; then
+		vlicense "${wrksrc}/LICENSE.txt"
+	elif [ -f "${wrksrc}/LICENSE" ]; then
+		vlicense "${wrksrc}/LICENSE"
+	else
+		echo "WebStorm is a proprietary software. See https://www.jetbrains.com/legal/" > ${DESTDIR}/usr/share/licenses/${pkgname}/LICENSE
+	fi
+}

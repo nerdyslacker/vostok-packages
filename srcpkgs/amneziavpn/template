@@ -1,0 +1,119 @@
+# Template file for 'amneziavpn-bin'
+pkgname=amneziavpn
+version=4.8.12.9
+revision=1
+archs="x86_64"
+wrksrc="AmneziaVPN-${version}"   # Имя папки после распаковки .tar, проверьте!
+hostmakedepends="tar xz 7zip xvfb-run binwalk xorg-server-xvfb zstd fontconfig libglvnd libX11 dbus-libs libxkbcommon libxkbcommon-x11 xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil libXrender libXi libxcb mit-krb5-libs"
+distfiles="https://github.com/amnezia-vpn/amnezia-client/releases/download/${version}/AmneziaVPN_${version}_linux_x64.tar"
+checksum="e67bb3e1f11a3fccea1459f17a421b07d400a28ef8faa78143ec9c65c9773a11"
+homepage="https://github.com/amnezia-vpn/amnezia-client"
+license="GPL-3.0-only"
+short_desc="Amnezia VPN client (binary repack)"
+maintainer="Vostok Linux <vostoklinux.org>"
+nostrip=yes
+noshlibs=yes  # Пакет самодостаточен, не ищем внешние shlibs
+
+depends="NetworkManager xz qt5-wayland qt6-wayland"
+
+do_extract() {
+	mkdir -p ${wrksrc}
+	cd ${wrksrc}
+	# 1. Извлекаем инсталлер из .tar
+	tar -xf ${XBPS_SRCDISTDIR}/${pkgname}-${version}/AmneziaVPN_${version}_linux_x64.tar
+	
+	# 2. Потрошим бинарник через binwalk
+	# -e (extract) — извлечь всё найденное
+	# -M (matryoshka) — заходить внутрь вложенных архивов
+	binwalk -e -M --quiet AmneziaVPN_Linux_Installer.bin
+
+	# 3. Binwalk создаст папку _AmneziaVPN_Linux_Installer.bin.extracted
+	# Внутри неё будет много мусора, но один из файлов — это само приложение.
+	# Обычно это папка или архив. Давай поднимем всё на уровень выше.
+	find _AmneziaVPN_Linux_Installer.bin.extracted -maxdepth 2 -type d -name "Amnezia*" -exec cp -R {} . \;
+    
+    # Если Amnezia не нашлась, просто скопируем всё извлеченное в корень wrksrc
+    cp -R _AmneziaVPN_Linux_Installer.bin.extracted/* .
+}
+
+do_install() {
+	# 1. Поиск распакованных файлов (binwalk может создать сложную структуру)
+	# Ищем основной бинарник, чтобы понять, где корень приложения
+	local binary=$(find . -type f -name "AmneziaVPN" -print -quit)
+	if [ -n "$binary" ]; then
+		local appdir=$(dirname "$binary")
+	else
+		# Если binwalk не нашел, пробуем стандартные папки
+		local appdir=""
+		for dir in AmneziaVPN data opt; do
+			if [ -d "${wrksrc}/${dir}" ]; then
+				appdir="${wrksrc}/${dir}"
+				break
+			fi
+		done
+	fi
+
+	if [ -z "$appdir" ] || [ ! -d "$appdir" ]; then
+		echo "ERROR: Cannot find extracted application directory. Structure was:" >&2
+		find . -maxdepth 3 >&2
+		exit 1
+	fi
+
+	# 2. Установка в /opt (стандарт для бинарных репаков)
+	vmkdir opt/amneziavpn
+	cp -R ${appdir}/* ${DESTDIR}/opt/amneziavpn/
+
+	# 3. Симлинки в /usr/bin для удобного запуска из терминала
+	vmkdir usr/bin
+	ln -sf /opt/amneziavpn/AmneziaVPN ${DESTDIR}/usr/bin/amneziavpn
+	ln -sf /opt/amneziavpn/AmneziaVPN-service ${DESTDIR}/usr/bin/amneziavpn-service
+
+	# 4. Настройка Runit сервиса (для работы VPN-демона в фоне)
+	vmkdir etc/sv/amneziavpn
+	cat > ${DESTDIR}/etc/sv/amneziavpn/run <<'EOF'
+#!/bin/sh
+# Проверка модуля tun (нужен для VPN-туннеля)
+[ -c /dev/net/tun ] || modprobe tun
+# Запуск демона. 2>&1 перенаправляет ошибки в логгер
+exec /opt/amneziavpn/AmneziaVPN-service 2>&1
+EOF
+	chmod 755 ${DESTDIR}/etc/sv/amneziavpn/run
+
+	# Добавляем логгер для сервиса (чтобы смотреть логи через svlogd)
+	vmkdir etc/sv/amneziavpn/log
+	cat > ${DESTDIR}/etc/sv/amneziavpn/log/run <<'EOF'
+#!/bin/sh
+exec vlogger -t amneziavpn
+EOF
+	chmod 755 ${DESTDIR}/etc/sv/amneziavpn/log/run
+
+	# 5. Интеграция в рабочий стол (Desktop файл и иконки)
+	# Если они есть внутри appdir, копируем их
+	if [ -d "${appdir}/usr/share/applications" ]; then
+		vmkdir usr/share/applications
+		cp -R ${appdir}/usr/share/applications/* ${DESTDIR}/usr/share/applications/
+	fi
+	if [ -d "${appdir}/usr/share/icons" ]; then
+		vmkdir usr/share/icons
+		cp -R ${appdir}/usr/share/icons/* ${DESTDIR}/usr/share/icons/
+	fi
+
+	# 6. Лицензия
+	vlicense ${appdir}/usr/share/doc/amneziavpn/copyright 2>/dev/null || \
+	( echo "GPL-3.0-only" > LICENSE && vlicense LICENSE )
+
+	# 7. Права доступа (КРИТИЧЕСКИ ВАЖНО)
+	# Сервису Amnezia нужны права root для создания сетевых интерфейсов
+	# Установка SUID бита позволяет запускать его от пользователя с правами root
+	if [ -f ${DESTDIR}/opt/amneziavpn/AmneziaVPN-service ]; then
+		chown root:root ${DESTDIR}/opt/amneziavpn/AmneziaVPN-service
+		chmod 4755 ${DESTDIR}/opt/amneziavpn/AmneziaVPN-service
+	fi
+
+	# 8. Финальная коррекция прав для всех файлов в /opt
+	find ${DESTDIR}/opt/amneziavpn -type d -exec chmod 755 {} +
+	find ${DESTDIR}/opt/amneziavpn -type f -exec chmod 644 {} +
+	# Возвращаем исполняемость бинарникам
+	chmod 755 ${DESTDIR}/opt/amneziavpn/AmneziaVPN
+	chmod 755 ${DESTDIR}/opt/amneziavpn/AmneziaVPN-service
+}

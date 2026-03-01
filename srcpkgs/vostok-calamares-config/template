@@ -1,455 +1,88 @@
 # Template file for 'vostok-calamares-config'
 pkgname=vostok-calamares-config
 version=1.0
-revision=73
+revision=85
 archs="x86_64"
+
+# Зависимости
+depends="calamares calamares-extensions gptfdisk parted dosfstools util-linux e2fsprogs"
 
 short_desc="Calamares configuration and branding for Vostok Linux"
 maintainer="Vostok Linux <team@vostoklinux.org>"
 license="GPL-3.0-or-later"
 homepage="https://vostoklinux.org"
 
-depends="
- calamares
- calamares-extensions
- qt6-imageformats
- kpmcore
- partitionmanager
- parted
- util-linux
-"
 do_install() {
-
-    # ==================================================
+    # =====================
+    # 1. Основные конфиги
+    # =====================
+    
     # settings.conf
-    # ==================================================
     vmkdir etc/calamares
-
-    cat > "${DESTDIR}/etc/calamares/settings.conf" << 'EOF'
----
-branding: vostok
-
-modules-search:
-  - /usr/lib/calamares/modules
-  - /usr/share/calamares/modules
-
-prompt-install: true
-dont-chroot: false
-disable-cancel-during-exec: true
-hide-back-and-next-during-exec: true
-quit-at-end: false
-
-sequence:
-  - show:
-      - welcomeq
-      - locale
-      - keyboard
-      - partition
-      - users
-      - summary
-
-  - exec:
-      - partition
-      - mount
-      - unpackfs
-      - machineid
-      - fstab
-      - locale
-      - keyboard
-      - localecfg
-      - users
-      - xbpsinstall
-      - postinstall
-      - bootloader
-      - umount
-  
-  - show:
-      - finished
-EOF
-
-  # ==================================================
-    # КОНФИГУРАЦИЯ МОДУЛЕЙ в /etc/calamares/modules/
-    # ==================================================
+    vinstall "${FILESDIR}/etc/calamares/settings.conf" 644 etc/calamares/
+    
+    # Модули Calamares
     vmkdir etc/calamares/modules
-
- # 1. Модуль partition (ОБЯЗАТЕЛЬНО!)
-cat > "${DESTDIR}/etc/calamares/modules/partition.conf" << 'EOF'
----
-# Vostok Linux Partition Configuration
-# Optimized for UEFI systems with Void/Runit
-
-partition:
-  # Тип таблицы разделов
-  initialPartitionTableChoice: gpt
-  
-  # НАСТРОЙКИ SWAP - КРИТИЧЕСКИ ВАЖНЫЕ ИСПРАВЛЕНИЯ
-  # Используем small для автоматического выбора, но не создаем через layout
-  initialSwapChoice: small
-  swapPartitionName: "swap"
-  swapPartitionSize: 4096  # 4GB в MiB
-  
-  # Файловые системы
-  defaultFileSystemType: "ext4"
-  availableFileSystemTypes: ["ext4", "btrfs", "xfs", "f2fs"]
-  
-  # EFI раздел (для UEFI систем)
-  efiSystemPartition: "/boot/efi"
-  efiSystemPartitionSize: 512M
-  efiSystemPartitionName: "EFI"
-  efiSystemPartitionMountPoint: "/boot/efi"
-  
-  # АВТОМАТИЧЕСКАЯ РАЗМЕТКА - УПРОЩЕННЫЙ ВАРИАНТ
-  # Создаем только root и оставляем место для swap (он создастся отдельно)
-  layout:
-    - name: "root"
-      filesystem: "ext4"
-      mountPoint: "/"
-      size: 30G
-    - name: "home"
-      filesystem: "ext4"
-      mountPoint: "/home"
-      size: 100%
-
-  # Параметры интерфейса
-  allowManualPartitioning: true
-  allowAutomatedPartitioning: true
-  drawNestedPartitions: false
-  alwaysShowPartitionLabels: true
-  
-  # Безопасные настройки
-  requiredStorage: 20G
-  checkPartitions: true
-  neverCreateSwap: false
-  ensureSuspendToDisk: true
-  
-  # Дополнительные настройки для Void
-  enableLuksAutomatedPartitioning: false
-  requiredPartitionTableType: "gpt"
-  
-  # Флаги для загрузчика - ВАЖНО для Void Linux!
-  flags:
-    efi: "esp"
-    boot: "boot"
-
-# Дополнительные настройки для Calamares
-config:
-  # Не показывать предупреждение о небольшом диске
-  showNotEnoughSpaceWarning: true
-  # Проверять наличие других ОС
-  checkForOtherOS: true
-  # Предлагать шифрование
-  showEncryptAutoPartitions: false
-EOF
-
-   # 2. Модуль locale
-    cat > "${DESTDIR}/etc/calamares/modules/locale.conf" << 'EOF'
----
-# Региональные настройки
-locale:
-  region: "Europe"
-  zone: "Moscow"
-  localeGenPath: "/etc/locale.gen"
-  
-  # Системная локаль по умолчанию
-  systemLocale: "en_US.UTF-8"
-  
-  # Локали для генерации
-  locales:
-    - "en_US.UTF-8 UTF-8"
-    - "ru_RU.UTF-8 UTF-8"
-EOF
-
- # 3. Модуль users
-    cat > "${DESTDIR}/etc/calamares/modules/users.conf" << 'EOF'
----
-# Настройки пользователя
-user:
-  # Группы по умолчанию
-  defaultGroups:
-    - wheel
-    - input
-    - audio
-    - video
-    - storage
-    - optical
-    - network
-    - lp
-    - scanner
-    - power
-    - users
-    - xbuilder
-
-  # Автовход
-  autologinGroup: "autologin"
-  doAutologin: false
-  
-  # Пароли
-  setRootPassword: true
-  doReusePassword: false
-  
-  sudoersGroup: "wheel"
-  sudoStyle: "sudo"
-  
-  # Требования к паролю
-  passwordRequirements:
-    minLength: 4
-    maxLength: -1
-    nonempty: true
-EOF
-
-  # 4. Модуль keyboard
-    cat > "${DESTDIR}/etc/calamares/modules/keyboard.conf" << 'EOF'
----
-# Раскладка клавиатуры
-keyboard:
-  # Модель
-  model: "pc105"
-  
-  # Раскладки
-  layouts:
-    - "us"
-    - "ru"
-  
-  # Варианты
-  variants:
-    - ""
-    - ""
-  
-  # По умолчанию
-  xOrgConfFileName: "00-keyboard.conf"
-  
-  # Переключатель
-  xOrgConfXkbVariant: ""
-  xOrgConfXkbOptions: "grp:alt_shift_toggle"
-EOF
-
-  # 5. Модуль bootloader
-    cat > "${DESTDIR}/etc/calamares/modules/bootloader.conf" << 'EOF'
----
-# Загрузчик
-bootloader:
-  # Используемый загрузчик
-  bootloader: "grub"
-  
-  # Метод установки
-  efiBootMgr: true
-  
-  # Диск для установки
-  installPath: "/boot/efi"
-  efiBootLoaderId: "Vostok Linux"
-  
-  # Ядро
-  kernel: "/vmlinuz"
-  initramfs: "/initramfs"
-  
-  # Обнаружение других ОС
-  grubInstall: "grub-install"
-  grubMkconfig: "grub-mkconfig"
-  grubCfg: "/boot/grub/grub.cfg"
-  osProber: true
-EOF
-
-    # ==================================================
-    # BRANDING DIR
-    # ==================================================
+    for conf in welcome locale keyboard partition users packages \
+                 unpackfs bootloader networkcfg shellprocess_postinstall; do
+        vinstall "${FILESDIR}/etc/calamares/modules/${conf}.conf" 644 \
+                 etc/calamares/modules/
+    done
+    
+    # =====================
+    # 2. Брендинг Vostok
+    # =====================
+    
+    # Директория брендинга
     vmkdir usr/share/calamares/branding/vostok
-
-    # --------------------------------------------------
-    # branding.desc
-    # --------------------------------------------------
-    cat > "${DESTDIR}/usr/share/calamares/branding/vostok/branding.desc" << 'EOF'
----
-componentName: vostok
-
-windowPlacement: center
-windowExpanding: normal
-
-style:
-  stylesheet: "stylesheet.qss"
-
-strings:
-  productName: Vostok Linux
-  shortProductName: Vostok
-  version: "1.0"
-  versionedName: "Vostok Linux 1.0"
-  bootloaderEntryName: Vostok
-
-images:
-  productLogo: "vostok-logo.jpg"
-  productIcon: "vostok-logo.jpg"
-
-sidebar: none
-navigation: widget
-
-welcome:
-  qml: "welcomeq.qml"
-
-slideshow: []
-slideshowAPI: 2
-EOF
-
-    # ==================================================
-    # LOGO (JPG, ЛОКАЛЬНО ДЛЯ CALAMARES)
-    # ==================================================
-    vinstall "${FILESDIR}/vostok-logo.jpg" 644 \
-    usr/share/calamares/branding/vostok \
-    vostok-logo.jpg
-
-
-    # ==================================================
-    # WELCOME QML
-    # ==================================================
-    cat > "${DESTDIR}/usr/share/calamares/branding/vostok/welcomeq.qml" << 'EOF'
-import QtQuick 2.15
-import io.calamares.core 1.0
-
-Item {
-    anchors.fill: parent
-
-    Column {
-        anchors.centerIn: parent
-        spacing: 20
-        width: parent.width * 0.8
-
-        Image {
-    // Указываем прямой путь к файлу в системе
-    source: "file:///usr/share/calamares/branding/vostok/vostok-logo.jpg"
-    width: 240
-    height: 240
-    fillMode: Image.PreserveAspectFit
-    anchors.horizontalCenter: parent.horizontalCenter
-}
-
-        Text {
-            text: "Welcome to Vostok Linux"
-            font.pixelSize: 32
-            font.bold: true
-            horizontalAlignment: Text.AlignHCenter
-            width: parent.width
-        }
-
-        Text {
-            text: "Fast · Clean · NoSystemD"
-            font.pixelSize: 16
-            horizontalAlignment: Text.AlignHCenter
-            width: parent.width
-        }
-    }
-}
-EOF
-
-    # ==================================================
-    # STYLESHEET
-    # ==================================================
-    cat > "${DESTDIR}/usr/share/calamares/branding/vostok/stylesheet.qss" << 'EOF'
-CalamaresWindow {
-    background-color: #f8fafc;
-}
-
-QWidget#contentWidget {
-    background-color: #f8fafc;
-}
-
-QPushButton {
-    background-color: #14b8a6;
-    color: #022c22;
-    border-radius: 10px;
-    padding: 8px 22px;
-    font-weight: 600;
-}
-
-QPushButton:hover {
-    background-color: #0d9488;
-    color: white;
-}
-
-QPushButton:disabled {
-    background-color: #94a3b8;
-    color: #475569;
-}
-
-QWidget#navigationWidget {
-    background-color: #ecfeff;
-    border-top: 1px solid #99f6e4;
-}
-EOF
-
-    # ==================================================
-    # XBPS INSTALL MODULE
-    # ==================================================
-    vmkdir usr/share/calamares/modules
-
-    cat > "${DESTDIR}/usr/share/calamares/modules/xbpsinstall.conf" << 'EOF'
----
-repositories:
-  - https://repo.vostoklinux.org/current
-  - https://repo-default.voidlinux.org/current
-  - https://repo-default.voidlinux.org/current/nonfree
-
-packages:
-  - base-system
-  - ark
-  - bluez
-  - base-devel
-  - xbps
-  - chrony
-  - dbus
-  - dbus-elogind
-  - elogind
-  - fastfetch
-  - git
-  - nano
-  - kde5
-  - kde5-baseapps
-  - nerd-fonts-symbols-ttf
-  - octoxbps
-  - polkit-elogind
-  - void-repo-nonfree
-  - xorg-minimal
-  - vostok-release
-  - vostok-logo
-  - grub-x86_64-efi
-  - efibootmgr
-  - xorg-minimal
-  - mesa-dri
-  - plasma-desktop
-  - sddm
-  - NetworkManager
-  - pipewire
-  - wireplumber
-  - pipewire-pulse
-  - firefox
-EOF
+    
+    # Файлы брендинга
+    vinstall "${FILESDIR}/usr/share/calamares/branding/vostok/branding.desc" 644 \
+             usr/share/calamares/branding/vostok/
+    vinstall "${FILESDIR}/usr/share/calamares/branding/vostok/style.qss" 644 \
+             usr/share/calamares/branding/vostok/
+    vinstall "${FILESDIR}/usr/share/calamares/branding/vostok/welcome.qml" 644 \
+             usr/share/calamares/branding/vostok/
+    
+    # Логотип (создаем простой, если нет)
+    # Установка твоего реального логотипа
+    vinstall "${FILESDIR}/usr/share/calamares/branding/vostok/vostok-logo.jpg" 644 \
+             usr/share/calamares/branding/vostok/
+    
+    # =====================
+    # 3. Кастомные модули
+    # =====================
+    
+    
+    # =====================
+    # 4. Пост-установочные скрипты
+    # =====================
+    
+    vmkdir var/lib/calamares/postinstall
+     vinstall "${FILESDIR}/var/lib/calamares/postinstall/post-install.sh" 755 \
+             var/lib/calamares/postinstall/
+    
+    # =====================
+    # 5. Дополнительные настройки
+    # =====================
+    
+    # Симлинк для удобства
+    ln -sf /usr/share/calamares/branding/vostok \
+           "${DESTDIR}/etc/calamares/branding" 2>/dev/null || true
 }
 
 post_install() {
     echo "========================================"
-    echo " Vostok Calamares Config Installed"
+    echo " Vostok Calamares Config Установлен"
     echo "========================================"
     echo ""
-    echo "Проверка конфигурации:"
-    
-    # Проверка файлов
-    if [ -f "/etc/calamares/settings.conf" ]; then
-        echo "✓ settings.conf"
-    else
-        echo "✗ settings.conf"
-    fi
-    
-    if [ -f "/etc/calamares/modules/partition.conf" ]; then
-        echo "✓ partition.conf"
-    else
-        echo "✗ partition.conf"
-    fi
-    
-    if [ -f "/usr/share/calamares/modules/xbpsinstall.conf" ]; then
-        echo "✓ xbpsinstall.conf"
-    else
-        echo "✗ xbpsinstall.conf"
-    fi
-    
+    echo "Конфигурация:"
+    echo "  • Основной конфиг: /etc/calamares/settings.conf"
+    echo "  • Модули: /etc/calamares/modules/"
+    echo "  • Брендинг: /usr/share/calamares/branding/vostok/"
+    echo "  • Скрипты: /var/lib/calamares/postinstall/"
     echo ""
-    echo "Для запуска установщика:"
-    echo "  sudo calamares -d"
+    echo "Для проверки: sudo calamares --check-config"
+    echo "Для запуска:  sudo calamares -d"
     echo "========================================"
 }
