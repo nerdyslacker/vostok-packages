@@ -1,6 +1,6 @@
 # 📦 Vostok Packages
 
-![vostok-screen](https://github.com/user-attachments/assets/649ef2cb-0751-4a2a-a666-cc3299d9266a)
+![toki_in_space](https://github.com/user-attachments/assets/3656fabe-5a35-4b90-be0d-d27def955ac2)
 
 Custom package repository for Vostok Linux — a collection of hand-crafted .xbps packages, bringing the best software to your Void-based distribution.
 
