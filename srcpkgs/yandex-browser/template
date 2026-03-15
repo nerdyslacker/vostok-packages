@@ -1,11 +1,11 @@
 # Template file for 'yandex-browser'
 pkgname=yandex-browser
 version=25.12.1.1319
-revision=1
+revision=2
 _channel=stable
 archs="x86_64"
 hostmakedepends="curl tar xz python3 python3-html2text python3-setuptools"
-depends="gtk+3"
+depends="gtk+3 ffmpeg squashfs-tools"
 short_desc="Attempt at creating a safer, faster, and more stable browser"
 maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="custom:yandex"
