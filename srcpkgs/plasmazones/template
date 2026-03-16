@@ -1,6 +1,6 @@
 # Template file for 'plasmazones'
 pkgname=plasmazones
-version=2.0.2
+version=2.2.1
 revision=1
 build_style=cmake
 configure_args="
@@ -18,18 +18,17 @@ depends="qt6-base qt6-declarative qt6-shadertools kf6-kconfig kf6-kconfigwidgets
  kf6-kcoreaddons kf6-kdbusaddons kf6-ki18n kf6-kcmutils kf6-kwindowsystem
  kf6-kglobalaccel kf6-knotifications kf6-kcolorscheme layer-shell-qt
 "
-short_desc="Window tiling and autotiling for KDE Plasma"
+short_desc="FancyZones-style window tiling for KDE Plasma"
 maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/fuddlesworth/PlasmaZones"
 distfiles="https://github.com/fuddlesworth/PlasmaZones/archive/refs/tags/v${version}.tar.gz"
-checksum=7dc4fafc818fa72f186c6bf7cbb7a3b0be25a6f91bdea48cd6f8ffb17bb0423c
+checksum=1274d50126f81b148259239a3582fbcc1dee226ab8491ee656bdb3b59a0dba7d
 noverifyrdeps=yes
 disable_shlib_provides=yes
 
 post_install() {
-	vmkdir etc/xdg/autostart
-	vinstall ${FILESDIR}/plasmazones-start.desktop 644 etc/xdg/autostart
+    vsv plasmazonesd
 
     # Remove systemd service files
     rm -rf ${DESTDIR}/usr/lib/systemd/
