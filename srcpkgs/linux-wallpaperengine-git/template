@@ -9,15 +9,14 @@ build_style=cmake
 configure_args="
  -DCMAKE_BUILD_TYPE=Release
  -DCMAKE_INSTALL_PREFIX=/opt/${_pkgname}
- -DCMAKE_MODULE_PATH=${wrksrc}/build/cef/cmake
  -Wno-dev
 "
 hostmakedepends="pkg-config"
-makedepends="liblz4-devel ffmpeg-devel mpv-devel glfw-devel glew-devel
- libfreeglut-devel pulseaudio-devel cups-devel at-spi2-core-devel
- nss-devel nspr-devel SDL2-devel glm wayland-protocols libXrandr-devel
+makedepends="liblz4-devel ffmpeg6-devel mpv-devel glfw-devel glew-devel
+ libfreeglut-devel pulseaudio-devel cups-devel at-spi2-core-devel nss-devel
+ nspr-devel SDL2-devel glm wayland-protocols libXrandr-devel gmpxx-devel
 "
-depends="ffmpeg mpv"
+depends="ffmpeg6 mpv"
 short_desc="Use Steam's Wallpaper Engine on Linux"
 maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="GPL-3.0-only"
@@ -47,7 +46,7 @@ checksum="
  3b21af49516c43ea55986f8006e601a2fce4a3fed97fd4bbdc045b825eb0886e
  5365148de683ef9cf7d2514a9167e31adf4cc840e2b3a6f9c06211fbc8391d37
  6f36ca4d507bdf9c27bec5265b6cc4380755521877bd30f26ece3dfba6a8d593
- 14bb3ced1a9f1a24a717cf22fcf977071a9a0a7af3ab5bb0b9daf437598b66ea
+ 0c4c80d28529ef9d96d5d9ddf28a53f910c7d6ce7197e133db2d5e4923a4c2a7
  24ac1980e62be7b1aea2c337d6bd4bc770dccd8b37e47c6db94b397f13ec4dc6
 "
 skip_extraction="
@@ -65,6 +64,8 @@ ${_cef_pkg}.tar.bz2
 
 CFLAGS+=" -Wno-builtin-macro-redefined"
 CXXFLAGS+=" -ffat-lto-objects -Wno-builtin-macro-redefined"
+
+export CEF_ROOT=${wrksrc}/build/cef
 
 post_extract() {
     for archive in $skip_extraction; do
