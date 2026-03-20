@@ -1,5 +1,5 @@
-# Template file for 'spacestation14-launcher'
-pkgname=spacestation14-launcher
+# Template file for 'spacestation14-launcher-bin'
+pkgname=spacestation14-launcher-bin
 version=0.37.1
 revision=1
 arch="x86_64"
