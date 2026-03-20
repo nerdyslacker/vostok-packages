@@ -1,0 +1,45 @@
+# Template file for 'byond'
+pkgname=byond
+version=516.1680
+revision=1
+archs="i686 x86_64"
+build_style=gnu-makefile
+depends="libpng ncurses libgcc"
+short_desc="Game server based on the BYOND language (Build your own net dream)"
+maintainer="nerdyslacker <karyan40024@gmail.com>"
+license="custom:byond"
+homepage="https://www.byond.com/"
+distfiles="https://secure.byond.com/games/download/build/516/${version}_byond_linux.zip"
+checksum=6f2ba796878d56f061ab33f624293a7b9e5ba409e8a96a95ebf09861e56bd10d
+nopie="yes"
+
+pre_build() {
+    chmod 644 man/man6/DreamDaemon.6
+    chmod 644 man/man6/DreamMaker.6
+
+    sed -i \
+        -e "/^BYOND_SYSTEM/s|=.*|= ${DESTDIR}/usr/libexec/byond|" \
+        -e "/^BIN_DIR/s|=.*|= ${DESTDIR}/usr/bin|" \
+        -e "/^LIB_DIR/s|=.*|= ${DESTDIR}/usr/lib|" \
+        -e "/^MAN_DIR/s|=.*|= ${DESTDIR}/usr/share/man|" \
+        -e "/ln -f -s/s|\$(BYOND_SYSTEM)|/usr/libexec/byond|" \
+        -e "s/libzip/libext/g" \
+        -e "/libpng/d" \
+        -e "/ldconfig/d" \
+        Makefile
+}
+
+do_build() {
+    make
+}
+
+do_install() {
+    vmkdir usr/bin
+    vmkdir usr/lib
+    vmkdir usr/libexec/byond
+    vmkdir usr/share/man/man6
+
+    make install DESTDIR=${DESTDIR}
+
+	ln -s ${DESTDIR}/usr/libexec/byond/bin/byondexec ${DESTDIR}/usr/bin/
+}

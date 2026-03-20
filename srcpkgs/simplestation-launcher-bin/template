@@ -1,0 +1,33 @@
+# Template file for 'simplestation-launcher-bin'
+pkgname=simplestation-launcher-bin
+version=4.0.2
+revision=1
+arch="x86_64"
+depends="libopenal byond"
+short_desc="Space Station: Beyond - A fork of the Space Wizards' RT Launcher"
+maintainer="nerdyslacker <karyan40024@gmail.com>"
+license="MIT"
+_source_name="SS14.launcher.v${version}.zip"
+homepage="https://github.com/Simple-Station/SimpleStationLauncher"
+distfiles="https://github.com/Simple-Station/SimpleStationLauncher/releases/download/v${version}/SS14.Launcher_Linux.zip>${_source_name}"
+checksum="4cbb16883ea93b0074d68ae23ddad3fdd56d72e610039c652d4c12f06067aa3d"
+noverifyrdeps=yes
+disable_shlib_provides=yes
+conflicts="spacestation14-launcher-bin>=0"
+replaces="spacestation14-launcher-bin>=0"
+
+do_install() {
+    vmkdir opt/SS14/
+    mv * ${DESTDIR}/opt/SS14/
+
+    vmkdir usr/bin/
+    ln -s /opt/SS14/SS14.Launcher ${DESTDIR}/usr/bin/simplestation-launcher
+
+    vmkdir usr/share/applications
+    vinstall ${FILESDIR}/SS14.desktop 644 usr/share/applications/
+
+	vmkdir usr/share/pixmaps
+    vinstall ${FILESDIR}/spacestation14.svg 644 usr/share/pixmaps/
+
+    chmod +x ${DESTDIR}/opt/SS14/SS14.Launcher
+}
