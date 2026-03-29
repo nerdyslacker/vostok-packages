@@ -221,32 +221,28 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_USER: builder  # Мы точно знаем, что это builder
         run: |
-          # 1. Подготовка SSH директории
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          # 2. Запись ключа в файл (как в вашем успешном тесте)
-          # Используем кавычки, чтобы сохранить структуру строк
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          # 1. Создаем временный файл ключа прямо в папке проекта
+          echo "$SSH_PRIVATE_KEY" > deploy_key
           
-          # Исправление возможных проблем с символами \n (на всякий случай)
-          sed -i 's/\\n/\n/g' ~/.ssh/id_deploy
-          chmod 600 ~/.ssh/id_deploy
+          # Очищаем от возможных кривых переносов строк
+          sed -i 's/\\n/\n/g' deploy_key
+          chmod 600 deploy_key
 
-          # 3. Добавление сервера в список известных хостов
-          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          # 2. Добавляем хост в known_hosts текущей папки
+          ssh-keyscan -H "$VPS_HOST" > vps_hosts
 
-          # 4. Деплой через rsync
-          # Используем созданный файл ключа через флаг -i
+          # 3. Запускаем rsync с явными путями
+          # МЫ УКАЗЫВАЕМ ПОЛНЫЙ ПУТЬ К deploy_key ЧЕРЕЗ $PWD
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=no" \
+            -e "ssh -i $PWD/deploy_key -o UserKnownHostsFile=$PWD/vps_hosts -o StrictHostKeyChecking=no" \
             ./pkgs/ \
             "$VPS_USER@$VPS_HOST:/var/www/vostoklinux.org/repo/current/"
 
-          # 5. Очистка ключа после завершения (безопасность)
-          rm ~/.ssh/id_deploy
+          # 4. Удаляем временные файлы
+          rm deploy_key vps_hosts
+
 
 
       - name: Cleanup sensitive files
