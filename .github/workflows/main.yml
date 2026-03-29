@@ -178,10 +178,16 @@ jobs:
         run: |
           echo "$XBPS_SIGNING_KEY" | base64 -d > /tmp/vostok-repo.key
           chmod 600 /tmp/vostok-repo.key
-
+      
       - name: Sign packages
         run: |
           cd ./pkgs
+          find . -mindepth 2 -name "*.xbps" -exec mv -t . {} +
+          
+          if [ -z "$(ls *.xbps 2>/dev/null)" ]; then
+            echo "Ошибка: Пакеты .xbps не найдены в ./pkgs"
+            exit 1
+          fi
 
           echo "Signing packages..."
           for pkg in *.xbps; do
@@ -194,11 +200,15 @@ jobs:
           done
 
           echo "Building repository index..."
-          xbps-rindex -a *.xbps
+          for pkg in *.xbps; do
+            xbps-rindex -a "$pkg"
+          done
+          
           xbps-rindex -s \
             --privkey /tmp/vostok-repo.key \
             --signedby "Vostok Linux" \
             .
+
 
       - name: Deploy to VPS via rsync
         env:
