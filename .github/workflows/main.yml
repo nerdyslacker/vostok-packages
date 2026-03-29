@@ -235,7 +235,7 @@ jobs:
 
           # 3. Запускаем rsync с явными путями
           # МЫ УКАЗЫВАЕМ ПОЛНЫЙ ПУТЬ К deploy_key ЧЕРЕЗ $PWD
-          rsync -avz --delete \
+          rsync -avz \
             -e "ssh -i $PWD/deploy_key -o UserKnownHostsFile=$PWD/vps_hosts -o StrictHostKeyChecking=no" \
             ./pkgs/ \
             "$VPS_USER@$VPS_HOST:/var/www/vostoklinux.org/repo/current/"
