@@ -35,9 +35,13 @@ jobs:
           cp /usr/share/xbps.d/*-repository-*.conf /etc/xbps.d/
           sed -i 's|repo-default|repo-ci|g' /etc/xbps.d/*-repository-*.conf
           xbps-install -Syu xbps && xbps-install -yu
-          xbps-install -y sudo bash curl git
+          xbps-install -y sudo bash curl git xtools
+          # Создаём пользователя
           useradd -G xbuilder -M builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          # Настраиваем subuid/subgid чтобы uid_map работал
+          echo "builder:100000:65536" >> /etc/subuid
+          echo "builder:100000:65536" >> /etc/subgid
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,6 +51,8 @@ jobs:
       - name: Prepare masterdir
         run: |
           chown -R builder:builder .
+          # Используем uchroot вместо unshare — не требует user namespaces
+          echo "XBPS_CHROOT_CMD=uchroot" >> etc/conf
           sudo -Eu builder ./xbps-src binary-bootstrap
 
       - name: Find changed templates
