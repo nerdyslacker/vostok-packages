@@ -40,6 +40,8 @@ jobs:
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           echo "builder:100000:65536" >> /etc/subuid
           echo "builder:100000:65536" >> /etc/subgid
+          # Разрешаем git работать в папке Actions
+          git config --global --add safe.directory /__w/vostok-packages/vostok-packages
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,8 +50,12 @@ jobs:
 
       - name: Prepare masterdir
         run: |
-          chown -R builder:builder .
           echo "XBPS_CHROOT_CMD=uchroot" >> etc/conf
+          # Только masterdir и hostdir отдаём builder, не всю папку
+          mkdir -p masterdir hostdir
+          chown -R builder:builder masterdir hostdir
+          # safe.directory для builder тоже
+          sudo -Eu builder git config --global --add safe.directory /__w/vostok-packages/vostok-packages
           sudo -Eu builder ./xbps-src binary-bootstrap
 
       - name: Find changed templates
@@ -80,7 +86,6 @@ jobs:
               PKGS="$PKGS $name"
             done
           else
-            # Явно подтягиваем BASE коммит чтобы git diff его нашёл
             git fetch origin "$BASE" || git fetch --unshallow || true
 
             echo "=== Changed files ==="
@@ -108,6 +113,7 @@ jobs:
       - name: Build packages
         if: steps.changed.outputs.packages != ''
         run: |
+          chown -R builder:builder masterdir hostdir
           FAILED=0
           for pkg in ${{ steps.changed.outputs.packages }}; do
             echo "━━━ Building: $pkg ━━━"
