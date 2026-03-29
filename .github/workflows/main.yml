@@ -36,10 +36,8 @@ jobs:
           sed -i 's|repo-default|repo-ci|g' /etc/xbps.d/*-repository-*.conf
           xbps-install -Syu xbps && xbps-install -yu
           xbps-install -y sudo bash curl git xtools
-          # Создаём пользователя
           useradd -G xbuilder -M builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          # Настраиваем subuid/subgid чтобы uid_map работал
           echo "builder:100000:65536" >> /etc/subuid
           echo "builder:100000:65536" >> /etc/subgid
 
@@ -51,7 +49,6 @@ jobs:
       - name: Prepare masterdir
         run: |
           chown -R builder:builder .
-          # Используем uchroot вместо unshare — не требует user namespaces
           echo "XBPS_CHROOT_CMD=uchroot" >> etc/conf
           sudo -Eu builder ./xbps-src binary-bootstrap
 
@@ -66,11 +63,17 @@ jobs:
             HEAD="${{ github.sha }}"
           fi
 
-          PKGS=$(git diff --name-only "$BASE" "$HEAD" -- srcpkgs/ \
-            | grep -oP 'srcpkgs/\K[^/]+' \
-            | sort -u \
-            | grep -v '^base-files$' \
-            | tr '\n' ' ')
+          # Если первый пуш — before равен нулевому хешу
+          if [ "$BASE" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE" ]; then
+            echo "First push detected, building all packages..."
+            PKGS=$(ls srcpkgs/ | grep -v '^base-files$' | tr '\n' ' ')
+          else
+            PKGS=$(git diff --name-only "$BASE" "$HEAD" -- srcpkgs/ \
+              | grep -oP 'srcpkgs/\K[^/]+' \
+              | sort -u \
+              | grep -v '^base-files$' \
+              | tr '\n' ' ')
+          fi
 
           echo "packages=$PKGS" >> $GITHUB_OUTPUT
           echo "Packages to build: $PKGS"
@@ -91,6 +94,9 @@ jobs:
       - name: Check that packages were built
         id: check
         run: |
+          echo "=== Full binpkgs tree ==="
+          find hostdir/binpkgs/ -name "*.xbps" 2>/dev/null || echo "Nothing found"
+
           if ls hostdir/binpkgs/main/*.xbps 2>/dev/null | grep -q .; then
             echo "has_packages=true" >> $GITHUB_OUTPUT
             ls -lh hostdir/binpkgs/main/*.xbps
