@@ -55,6 +55,11 @@ jobs:
       - name: Find changed templates
         id: changed
         run: |
+          echo "=== DEBUG ==="
+          echo "Event: ${{ github.event_name }}"
+          echo "Before: ${{ github.event.before }}"
+          echo "SHA: ${{ github.sha }}"
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE="${{ github.event.pull_request.base.sha }}"
             HEAD="${{ github.event.pull_request.head.sha }}"
@@ -63,19 +68,40 @@ jobs:
             HEAD="${{ github.sha }}"
           fi
 
+          echo "BASE=$BASE HEAD=$HEAD"
+
+          PKGS=""
+
           if [ "$BASE" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE" ]; then
-            echo "First push detected, building all packages..."
-            PKGS=$(ls srcpkgs/ | grep -v '^base-files$' | tr '\n' ' ')
+            echo "First push — building all packages"
+            for d in srcpkgs/*/; do
+              name=$(basename "$d")
+              [ "$name" = "base-files" ] && continue
+              PKGS="$PKGS $name"
+            done
           else
-            PKGS=$(git diff --name-only "$BASE" "$HEAD" -- srcpkgs/ \
-              | grep -oP 'srcpkgs/\K[^/]+' \
-              | sort -u \
-              | grep -v '^base-files$' \
-              | tr '\n' ' ')
+            echo "=== Changed files ==="
+            # БЕЗ -- srcpkgs/ в конце — фильтруем через grep
+            git diff --name-only "$BASE" "$HEAD"
+
+            for f in $(git diff --name-only "$BASE" "$HEAD"); do
+              case "$f" in
+                srcpkgs/*)
+                  name=$(echo "$f" | cut -d/ -f2)
+                  [ "$name" = "base-files" ] && continue
+                  [ -z "$name" ] && continue
+                  case " $PKGS " in
+                    *" $name "*) ;;
+                    *) PKGS="$PKGS $name" ;;
+                  esac
+                  ;;
+              esac
+            done
           fi
 
+          PKGS=$(echo "$PKGS" | xargs)
+          echo "Packages to build: '$PKGS'"
           echo "packages=$PKGS" >> $GITHUB_OUTPUT
-          echo "Packages to build: $PKGS"
 
       - name: Build packages
         if: steps.changed.outputs.packages != ''
