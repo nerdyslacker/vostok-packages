@@ -1,7 +1,7 @@
 # Template file for 'vscode'
 pkgname=vscode-bin
-version=1.96.2
-revision=1
+version=1.113.0
+revision=6
 archs="x86_64"
 wrksrc="VSCode-linux-x64"
 distfiles=("https://update.code.visualstudio.com/${version}/linux-x64/stable>code-${version}.tar.gz")
@@ -18,17 +18,13 @@ depends="alsa-lib at-spi2-core cairo cups dbus expat fontconfig freetype
  mesa pango eudev-libudev libgbm libsecret"
 
 do_install() {
-	# 1. Создаём целевую директорию для приложения
 	vmkdir usr/lib/vscode
 
-	# 2. Копируем все файлы из распакованного архива
 	vcopy "${wrksrc}/*" usr/lib/vscode
 
-	# 3. Символическая ссылка на исполняемый файл
 	vmkdir usr/bin
 	ln -sf /usr/lib/vscode/bin/code ${DESTDIR}/usr/bin/code
 
-	# 4. .desktop файл (пытаемся найти в архиве, иначе создаём свой)
 	if [ -f "${wrksrc}/resources/app/resources/linux/code.desktop" ]; then
 		vinstall "${wrksrc}/resources/app/resources/linux/code.desktop" 644 usr/share/applications
 	else
@@ -46,14 +42,12 @@ EOF
 		vinstall code.desktop 644 usr/share/applications
 	fi
 
-	# 5. Иконка (если есть)
 	if [ -f "${wrksrc}/resources/app/resources/linux/code.png" ]; then
 		vinstall "${wrksrc}/resources/app/resources/linux/code.png" 644 usr/share/pixmaps
 		vmkdir usr/share/icons/hicolor/48x48/apps
 		cp "${wrksrc}/resources/app/resources/linux/code.png" ${DESTDIR}/usr/share/icons/hicolor/48x48/apps/vscode.png
 	fi
 
-	# 6. Лицензия
 	if [ -f "${wrksrc}/LICENSE" ]; then
 		vlicense "${wrksrc}/LICENSE"
 	elif [ -f "${wrksrc}/LICENSES.chromium.html" ]; then
