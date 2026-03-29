@@ -63,7 +63,6 @@ jobs:
             HEAD="${{ github.sha }}"
           fi
 
-          # Если первый пуш — before равен нулевому хешу
           if [ "$BASE" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE" ]; then
             echo "First push detected, building all packages..."
             PKGS=$(ls srcpkgs/ | grep -v '^base-files$' | tr '\n' ' ')
@@ -97,9 +96,9 @@ jobs:
           echo "=== Full binpkgs tree ==="
           find hostdir/binpkgs/ -name "*.xbps" 2>/dev/null || echo "Nothing found"
 
-          if ls hostdir/binpkgs/main/*.xbps 2>/dev/null | grep -q .; then
+          if find hostdir/binpkgs/ -name "*.xbps" 2>/dev/null | grep -q .; then
             echo "has_packages=true" >> $GITHUB_OUTPUT
-            ls -lh hostdir/binpkgs/main/*.xbps
+            find hostdir/binpkgs/ -name "*.xbps"
           else
             echo "has_packages=false" >> $GITHUB_OUTPUT
             echo "No .xbps files found"
@@ -110,19 +109,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vostok-packages-${{ github.sha }}
-          path: hostdir/binpkgs/main/*.xbps
+          path: hostdir/binpkgs/**/*.xbps
           retention-days: 7
 
   deploy:
     name: Sign and deploy to VPS
     runs-on: ubuntu-latest
     needs: build
-
-    if: |
-      needs.build.outputs.has_packages == 'true' &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
-
+    if: needs.build.outputs.has_packages == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
 
     container:
