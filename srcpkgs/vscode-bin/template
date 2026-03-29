@@ -1,11 +1,11 @@
 # Template file for 'vscode'
 pkgname=vscode-bin
 version=1.113.0
-revision=8
+revision=9
 archs="x86_64"
 wrksrc="VSCode-linux-x64"
 distfiles=("https://update.code.visualstudio.com/${version}/linux-x64/stable>code-${version}.tar.gz")
-checksum=2681040089faf143bed37246f2b0bc0787f6d342d878b1ec4b3737b38833c088
+checksum=a7ef2196ae9e07f777a323cc8ab278651a98eb9c50c849348dcf24d8589dbae6
 homepage="https://code.visualstudio.com"
 license="custom:Microsoft EULA"
 short_desc="Visual Studio Code - proprietary source code editor"
