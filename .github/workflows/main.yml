@@ -112,7 +112,9 @@ jobs:
       - name: Build packages
         if: steps.changed.outputs.packages != ''
         run: |
-          chown -R builder:builder masterdir hostdir
+          [ -d masterdir ] && chown -R builder:builder masterdir
+          [ -d hostdir ] && chown -R builder:builder hostdir
+          
           FAILED=0
           for pkg in ${{ steps.changed.outputs.packages }}; do
             echo "━━━ Building: $pkg ━━━"
