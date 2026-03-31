@@ -1,7 +1,7 @@
 # Template file for 'cursor'
 pkgname=cursor
 version=2.6.22
-revision=1
+revision=2
 archs="x86_64"
 wrksrc="cursor-${version}"
 distfiles="https://downloads.cursor.com/production/c6285feaba0ad62603f7c22e72f0a170dc8415a5/linux/x64/deb/amd64/deb/cursor_${version}_amd64.deb>cursor-${version}-amd64.deb"
@@ -41,5 +41,5 @@ do_install() {
 		chmod 4755 ${DESTDIR}/usr/lib/cursor/chrome-sandbox
 	fi
 
-	vlicense usr/share/doc/cursor/copyright
+	vinstall ${FILESDIR}/LICENSE 644 usr/share/licenses/${pkgname}
 }
