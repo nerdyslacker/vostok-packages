@@ -9,16 +9,6 @@ go_import_path="github.com/AvengeMedia/${_pkg1}"
 go_build_tags=""
 go_ldflags="-linkmode=external"
 depends="dgop quickshell font-inter font-fira-ttf font-firacode material-symbols-variable-ttf"
-optdepends="
- brightnessctl: laptop display brightness control
- cava: audio visualizer
- cliphist: clipboard history
- matugen: dynamic wallpaper-based theming
- NetworkManager: network management
- qt5ct: Qt5 application theming
- qt6ct: Qt6 application theming
- wl-clipboard: clipboard utilities
-"
 short_desc="A Quickshell-based desktop shell with Material 3 design principles"
 maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="GPL-3.0-only"
@@ -45,13 +35,4 @@ do_install() {
 	vmkdir usr/share/doc/${pkgname}
 	vinstall README.md 644 usr/share/doc/${pkgname}/
 	vcopy docs/* usr/share/doc/${pkgname}/
-}
-
-dms-shell-niri_package() {
-	short_desc+=" (for Niri)"
-	depends="${sourcepkg} niri"
-	pkg_install() {
-		vmkdir usr/share/doc/dms-shell-niri
-		vcopy ${DESTDIR}/usr/share/doc/dms-shell/* usr/share/doc/dms-shell-niri/
-	}
 }
