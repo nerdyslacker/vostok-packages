@@ -1,0 +1,19 @@
+# Template file for 'vostok-niri-dms'
+pkgname=vostok-niri-dms
+version=0.0.1
+revision=1
+metapackage=yes
+depends="
+ niri matugen adw-gtk3-theme dms-shell dgop dsearch vostok-niri-dms-config
+ qt5ct qt6ct qt5-wayland qt6-multimedia qt6-wayland xwayland-satellite
+ xdg-desktop-portal-gnome xdg-desktop-portal-gtk xorg-server-xwayland
+ wayland-devel wayland-protocols fuzzel kitty dbus ibus pipewire
+ nautilus nautilus-open-any-terminal xarchiver ffmpegthumbnailer 
+ zathura zathura-djvu zathura-pdf-mupdf udiskie mpv fastfetch fzf jq 
+ bat ripgrep ImageMagick qimgv fontconfig noto-fonts-emoji
+ colloid-everforest-icon-theme colloid-icon-theme-cursors
+"
+short_desc="Vostok Linux Niri with DankMaterialShell meta package"
+maintainer="nerdyslacker <karyan40024@gmail.com>"
+license="Public Domain"
+homepage="https://vostoklinux.org"
