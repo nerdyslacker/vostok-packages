@@ -4,7 +4,7 @@ version=9.3.1
 revision=1
 archs="x86_64"
 hostmakedepends="tar xz"
-depdends="libstdc++ curl xdg-utils dejavu-fonts-ttf GConf"
+depends="libstdc++ curl xdg-utils dejavu-fonts-ttf"
 short_desc="Open-source office suite pack"
 maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="AGPL-3.0-only"
@@ -14,11 +14,12 @@ checksum=2fdda24d2efe65528d0aabad0633d868f22f67cf1567f8df39e72cba24f6af24
 nostrip=yes
 
 do_extract() {
-  mkdir -p ${DESTDIR}
-  ar x ${XBPS_SRCDISTDIR}/${pkgname}-${version}/onlyoffice-desktopeditors_amd64.deb
-  tar xf data.tar.xz -C ${DESTDIR}
+	mkdir -p ${DESTDIR}
+	ar x ${XBPS_SRCDISTDIR}/${pkgname}-${version}/onlyoffice-desktopeditors_amd64.deb
+	tar xf data.tar.xz -C ${DESTDIR}
 }
 
 do_install() {
-  rm -rf ${DESTDIR}/etc
+	rm -rf ${DESTDIR}/etc
+	vlicense ${DESTDIR}/opt/onlyoffice/desktopeditors/LICENSE.txt
 }
