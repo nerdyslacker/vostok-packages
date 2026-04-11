@@ -2,7 +2,7 @@
 Name=Telegram
 GenericName=Instant Messenger
 Comment=Fast and secure messaging
-Exec=/usr/bin/telegram-desktop -- %u
+Exec=/opt/telegram/Telegram -- %u
 Icon=telegramdesktop
 Terminal=false
 Type=Application
@@ -10,3 +10,4 @@ Categories=Network;InstantMessaging;Chat;
 MimeType=x-scheme-handler/tg;
 StartupWMClass=TelegramDesktop
 StartupNotify=true
+X-GNOME-UsesNotifications=true
