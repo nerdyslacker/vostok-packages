@@ -7,7 +7,7 @@ archs="x86_64"
 wrksrc="claude-desktop-${version}"
 depends="alsa-lib libsecret libgbm libdrm libcups eudev-libudev
  libayatana-appindicator hicolor-icon-theme xdg-utils"
-short_desc="[ai]Claude Desktop -Native Linux client for Claude AI (unofficial AppImage repack)"
+short_desc="[ai]Claude Desktop - Native Linux client for Claude AI (unofficial AppImage repack)"
 maintainer="David Ivashevich <davidivashevich@gmail.com>"
 license="custom:Anthropic-TOS"
 homepage="https://github.com/aaddrick/claude-desktop-debian"
