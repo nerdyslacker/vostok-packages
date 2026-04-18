@@ -1,18 +1,18 @@
 # Template file for 'claude-desktop'
 pkgname=claude-desktop
-version=1.1617.0
-_release=1.3.27
+version=1.3109.0
+_release=1.3.32
 revision=1
 archs="x86_64"
 wrksrc="claude-desktop-${version}"
 depends="alsa-lib libsecret libgbm libdrm libcups eudev-libudev
  libayatana-appindicator hicolor-icon-theme xdg-utils"
-short_desc="[ai]Claude Desktop - Native Linux client for Claude AI (unofficial AppImage repack)"
+short_desc="Claude Desktop native Linux client for Claude AI"
 maintainer="David Ivashevich <davidivashevich@gmail.com>"
 license="custom:Anthropic-TOS"
 homepage="https://github.com/aaddrick/claude-desktop-debian"
 distfiles="https://github.com/aaddrick/claude-desktop-debian/releases/download/v${_release}%2Bclaude${version}/claude-desktop-${version}-${_release}-amd64.AppImage>claude-desktop-${version}.AppImage"
-checksum=808373753e659ced4c249d7b5b35f83218d5835a162b64a36c537143c7e1c325
+checksum=8238a2c55599525a10bcd4dbf1ebcf0a36104fb77a82015f2361cbea3f0c9c1c
 nostrip=yes
 noshlibs=yes
 
