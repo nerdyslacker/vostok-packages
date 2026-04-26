@@ -1,6 +1,6 @@
 # Template file for 'telegram-bin'
 pkgname=telegram-bin
-version=6.7.6
+version=6.7.8
 revision=1
 archs="x86_64"
 wrksrc="Telegram"
@@ -12,7 +12,7 @@ license="GPL-3.0-or-later"
 homepage="https://desktop.telegram.org"
 changelog="https://github.com/telegramdesktop/tdesktop/blob/v${version}/changelog.txt"
 distfiles="https://github.com/telegramdesktop/tdesktop/releases/download/v${version}/tsetup.${version}.tar.xz"
-checksum=b3a38a7b4bcd5891857992b672ccebf91fb83a63c07ba3d15a023fad8e482222
+checksum=17c7c16014975f0643b90c8c8fb419efd2f57c952b2153bee81390473108ce48
 nostrip=yes
 
 do_install() {
@@ -24,7 +24,7 @@ do_install() {
 
 	# Desktop file must be named telegramdesktop.desktop — Telegram checks
 	# for this exact name at startup to avoid creating a duplicate in ~/.local
-	vinstall ${FILESDIR}/telegramdesktop.desktop 644 usr/share/applications
+	#vinstall ${FILESDIR}/telegramdesktop.desktop 644 usr/share/applications
 
 	for size in 16 32 48 64 128 256 512; do
 		[ -f ${FILESDIR}/${size}x${size}.png ] || continue
