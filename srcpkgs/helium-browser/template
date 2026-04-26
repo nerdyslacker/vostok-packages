@@ -1,16 +1,16 @@
 # Template file for 'helium-browser'
 pkgname=helium-browser
-version=0.11.1.1
+version=0.11.5.1
 revision=1
 archs="x86_64"
 wrksrc="helium-${version}"
 depends="alsa-lib libsecret libgbm libdrm libcups eudev-libudev"
-short_desc="[browsers]Helium Browser - Private, fast, and honest web browser. Built for those who value speed and true digital sovereignty"
+short_desc="Private, fast, and honest web browser. Built for those who value speed and true digital sovereignty"
 maintainer="Vostok Linux <packaging@vostoklinux.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/imputnet/helium"
 distfiles="https://github.com/imputnet/helium-linux/releases/download/${version}/helium-${version}-x86_64.AppImage>helium-${version}.AppImage"
-checksum=35f8bcaa38fb60eba3b1ff272e6dccbbea21fd1eb8d96cbf9e77344e8a25a56d
+checksum=362ec867d50169fafeb2cd017106912aa9a5989238215d6344027c8e17287658 
 nostrip=yes
 noshlibs=yes
 
