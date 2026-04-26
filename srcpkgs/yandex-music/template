@@ -1,6 +1,6 @@
 # Template file for 'yandex-music'
 pkgname=yandex-music
-version=5.95.0
+version=5.97.3
 revision=1
 hostmakedepends="tar xz nodejs"
 makedepends="asar"
@@ -11,7 +11,7 @@ maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="custom:yandex"
 homepage="https://music.yandex.ru/download/"
 distfiles="https://desktop.app.music.yandex.net/stable/Yandex_Music_amd64_${version}.deb"
-checksum="8719ac8c4c54b8566ad38f5fd53df1df4888706b8a6055738830cdc25112b75c"
+checksum="699201a71c487dd0626c41954229605435b476486a736bdb81d2b71834848179"
 
 do_extract() {
 	mkdir -p ${DESTDIR}
@@ -19,21 +19,21 @@ do_extract() {
 }
 
 pre_install() {
-	tar xf data.tar.xz -C ${DESTDIR}
+    tar xf data.tar.xz -C ${DESTDIR}
 
-	# Disable updater in app.asar
-	app_asar="$(find "${DESTDIR}/opt" -type f -path '*/resources/app.asar' | head -n1)"
-	[ -n "$app_asar" ] || die "app.asar not found in extracted package"
+    # Disable updater in app.asar
+    app_asar="$(find "${DESTDIR}/opt" -type f -path '*/resources/app.asar' | head -n1)"
+    [ -n "$app_asar" ] || die "app.asar not found in extracted package"
 
-	bash "${FILESDIR}/patch-asar-updater.sh" --in-place "$app_asar"
-	rm -f "${app_asar}.bak."*
+    bash "${FILESDIR}/patch-asar-updater.sh" --in-place "$app_asar"
+    rm -f "${app_asar}.bak."*
 }
 
 do_install() {
-	# Rename folder if needed
-	if [ -d "${DESTDIR}/opt/Яндекс Музыка" ]; then
-		mv "${DESTDIR}/opt/Яндекс Музыка" "${DESTDIR}/opt/yandex-music"
-	fi
+    # Rename folder if needed
+    if [ -d "${DESTDIR}/opt/Яндекс Музыка" ]; then
+        mv "${DESTDIR}/opt/Яндекс Музыка" "${DESTDIR}/opt/yandex-music"
+    fi
 
 	if [ -d "${DESTDIR}/opt/yandex-music/resources/assets/icons" ]; then
 		for size in 16 22 24 32 48; do
@@ -44,13 +44,12 @@ do_install() {
 		done
 	fi
 
-	# Fix .desktop
-	if [ -f "${DESTDIR}/usr/share/applications/yandexmusic.desktop" ]; then
-		sed -i 's|/opt/Яндекс Музыка|/opt/yandex-music|g' "${DESTDIR}/usr/share/applications/yandexmusic.desktop"
-		sed -i 's|Categories=Audio;|Categories=AudioVideo;Audio;|g' "${DESTDIR}/usr/share/applications/yandexmusic.desktop"
-		sed -i 's|Exec="/opt/yandex-music/yandexmusic"|Exec=yandexmusic|' "${DESTDIR}/usr/share/applications/yandexmusic.desktop"
-	fi
+    # Fix .desktop
+    if [ -f "${DESTDIR}/usr/share/applications/yandexmusic.desktop" ]; then
+        sed -i 's|/opt/Яндекс Музыка|/opt/yandex-music|g' "${DESTDIR}/usr/share/applications/yandexmusic.desktop"
+        sed -i 's|Categories=Audio;|Categories=AudioVideo;Audio;|g' "${DESTDIR}/usr/share/applications/yandexmusic.desktop"
+        sed -i 's|Exec="/opt/yandex-music/yandexmusic"|Exec=yandexmusic|' "${DESTDIR}/usr/share/applications/yandexmusic.desktop"
+    fi
 
-	vbin ${FILESDIR}/yandexmusic.sh yandexmusic
-	vlicense ${DESTDIR}/opt/yandex-music/LICENSE.electron.txt
+    vbin ${FILESDIR}/yandexmusic.sh yandexmusic
 }
