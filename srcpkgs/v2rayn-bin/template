@@ -1,7 +1,7 @@
 # Template file for 'v2rayn-bin'
 pkgname=v2rayn-bin
 _pkgname=v2rayN
-version=7.19.5
+version=7.20.4
 revision=1
 hostmakedepends="tar xz"
 short_desc="GUI client for v2ray that supports Xray, sing-box and others"
@@ -9,7 +9,10 @@ maintainer="nerdyslacker <karyan40024@gmail.com>"
 license="GPL-3.0-or-later"
 homepage="https://v2rayn.2dust.link"
 distfiles="https://github.com/2dust/${_pkgname}/releases/download/${version}/${_pkgname}-linux-64.deb"
-checksum=86165940593fca2cc57fb668846bad8e3c7fef5564fcfbb02e26253cc8b5cf04
+checksum=77612fa705c4e720f2cc8e104339234f1c889e043b909ee227c838f7fc9f57dc
+nostrip=yes
+noshlibs=yes
+nopie=yes
 
 do_extract() {
 	mkdir -p ${DESTDIR}
